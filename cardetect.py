@@ -11,8 +11,60 @@ Bryant Pong
 
 import cv2
 import numpy as np
+from matplotlib import pyplot as plt
 import glob
 import sys
+
+# Constants
+TEST_IMAGES_FOLDER = "./test_images/"
+OUTPUT_IMAGES_FOLDER = "./output_images/"
+
+# Set this flag to True to enable debug images:
+displayImages = True
+
+'''
+Helper Function to display a RGB image: 
+
+Set the second flag to True to convert
+the image from BGR to RGB. 
+'''
+def DisplayImage( img, convert=False ):
+
+    if not displayImages:
+        return
+
+    if convert:
+        img = cv2.cvtColor( img, cv2.COLOR_BGR2RGB )
+
+    plt.imshow( img )
+    plt.show()
+
+'''
+Helper function to display a grayscale image:
+'''
+def DisplayGrayImage( img ):
+
+    if not displayImages:
+        return
+    
+    plt.imshow( img, cmap='gray' )
+    plt.show()
+
+'''
+Vehicle Detection Pipeline
+
+This function takes in the full path of the image
+to process.  This function returns the same image
+but with bounding rectangles overlayed around the detected
+vehicles
+'''
+def CarDetectPipeline( imageName ):
+
+    # Open the image in BGR format:
+    image = cv2.imread( imageName )
+
+    # TODO: Replace this when the pipeline is complete:
+    return np.copy( image )
 
 '''
 Main function.  We are expecting a single command-line argument,
@@ -23,7 +75,23 @@ def main():
     if len( sys.argv ) > 1:
         
         if "images" in sys.argv:
-            print( "Now detecting vehicles in images" )
+            print( "Now detecting vehicles in " + TEST_IMAGES_FOLDER )
+
+            # All the test JPG images are in TEST_IMAGES_FOLDER:
+            images = glob.glob( TEST_IMAGES_FOLDER + "*.jpg" )
+
+            '''
+            For each of these images, run the image through the
+            CarDetectPipeline and save the output image to the
+            folder specified by OUTPUT_IMAGES_FOLDER.
+            '''
+        
+            for imagePath in images:
+                
+                detectedImage = CarDetectPipeline( imagePath )
+
+                DisplayImage( detectedImage, True )
+
         if "video" in sys.argv:
             # TODO: We're expecting the video file to analyze to be in the following argument:  
             print( "Now detecting vehicles in video" )
