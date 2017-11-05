@@ -10,10 +10,11 @@ Bryant Pong
 '''
 
 import cv2
-import numpy as np
-from matplotlib import pyplot as plt
 import glob
 import sys
+import numpy as np
+from matplotlib import pyplot as plt
+from skimage.feature import hog
 
 # Constants
 TEST_IMAGES_FOLDER = "./test_images/"
@@ -51,6 +52,14 @@ def DisplayGrayImage( img ):
     plt.show()
 
 '''
+This function is used to train the Support Vector Machine.
+
+This function will save the trained data in a pickle file. 
+'''
+def TrainClassifier():
+    pass
+
+'''
 Vehicle Detection Pipeline
 
 This function takes in the full path of the image
@@ -73,7 +82,12 @@ which tells the script whether we want to process images or a video file.
 def main():
     
     if len( sys.argv ) > 1:
-        
+
+        if "train" in sys.argv:
+            print( "Now training SVM Linear Classifier" )
+
+            TrainClassifier()
+
         if "images" in sys.argv:
             print( "Now detecting vehicles in " + TEST_IMAGES_FOLDER )
 
