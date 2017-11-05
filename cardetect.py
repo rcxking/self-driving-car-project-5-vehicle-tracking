@@ -52,6 +52,25 @@ def DisplayGrayImage( img ):
     plt.show()
 
 '''
+Helper function to draw a series of bounding boxes on the provided
+image.
+
+"img" is expected to be in RGB format.
+
+The boxes are in the format [ ( ( x1, y1 ), ( x2, y2 ) ), ... ]
+
+The return value of this function is a copy of img with the bounding
+boxes drawn on it.
+'''
+def DrawBoundingBoxes( img, boxes, color = ( 0, 0, 255 ), thickness = 6 ):
+    imgCopy = np.copy( img )
+
+    for box in boxes:
+        cv2.rectangle( img, box[ 0 ], box[ 1 ], color, thickness )
+
+    return imgCopy
+
+'''
 This function is used to train the Support Vector Machine.
 
 This function will save the trained data in a pickle file. 
