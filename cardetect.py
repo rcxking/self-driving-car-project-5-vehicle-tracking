@@ -79,7 +79,9 @@ Comparing histograms will allow you to filter out objects
 with different colors, but will be the same for images with
 the same amount of colors.  For example, both a red car
 and a red billboard will have a similar color histogram, but
-a red car and a blue object will have a different color histogram.  
+a red car and a blue object will have a different color histogram.
+
+TODO: May want to look at different color spaces (HLS)  
 '''
 def ComputeColorHistogram( img, nbins = 32, binsRange = ( 0, 256 ) ):
 
@@ -99,6 +101,16 @@ def ComputeColorHistogram( img, nbins = 32, binsRange = ( 0, 256 ) ):
 
     return redHist, greenHist, blueHist, binCenters, histFeatures
     
+'''
+Helper function to resize a given RGB image and return
+a 1-Dimensional spatial histogram. 
+'''
+def ComputeResizedSpatialHistogram( img, colorSpace = 'RGB', size = (32, 32 ) ):
+
+    # TODO: Have color space conversions here:
+    features = cv2.resize( img, size ).ravel()
+
+    return features
 
 '''
 This function is used to train the Support Vector Machine.
