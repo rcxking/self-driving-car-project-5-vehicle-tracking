@@ -13,6 +13,7 @@ import cv2
 import glob
 import sys
 import numpy as np
+import pickle
 from matplotlib import pyplot as plt
 from skimage.feature import hog
 
@@ -69,6 +70,35 @@ def DrawBoundingBoxes( img, boxes, color = ( 0, 0, 255 ), thickness = 6 ):
         cv2.rectangle( img, box[ 0 ], box[ 1 ], color, thickness )
 
     return imgCopy
+
+'''
+Helper function to compute a color histogram feature vector
+for an input RGB image.
+
+Comparing histograms will allow you to filter out objects
+with different colors, but will be the same for images with
+the same amount of colors.  For example, both a red car
+and a red billboard will have a similar color histogram, but
+a red car and a blue object will have a different color histogram.  
+'''
+def ComputeColorHistogram( img, nbins = 32, binsRange = ( 0, 256 ) ):
+
+    # Compute the individual RGB histograms for the image:
+    redHist = np.histogram( img[ :, :, 0 ], bins = nbins, range = binsRange )
+    greenHist = np.histogram( img[ :, :, 1 ], bins = nbins, range = binsRange )
+    blueHist = np.histogram( img[ :, :, 2 ], bins = nbins, range = binsRange )
+
+    # All the histograms have the same number of bins:
+    binEdges = redHist[ 1 ]
+
+    # Compute the bin centers:
+    binCenters = ( binEdges[ 1: ] + binEdges[ 0 : len( binEdges ) - 1 ] ) / 2
+
+    # Concatenate the histograms to form the feature vector:
+    histFeatures = np.concatenate( redHist[ 0 ], greenHist[ 0 ], blueHist[ 0 ] )
+
+    return redHist, greenHist, blueHist, binCenters, histFeatures
+    
 
 '''
 This function is used to train the Support Vector Machine.
