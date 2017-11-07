@@ -113,6 +113,33 @@ def ComputeResizedSpatialHistogram( img, colorSpace = 'RGB', size = (32, 32 ) ):
     return features
 
 '''
+This function takes in a list of strings of filenames from the
+vehicles and non-vehicles datasets.  A dictionary is constructed
+to give the following information:
+
+1) Number of vehicle images     "nCars"
+2) Number of non-vehicle images "nNotCars" 
+3) Shape of a sample image      "imageShape"
+4) Type of a sample image       "dataType"
+'''
+def GetDatasetStats( carImageList, notCarImageList ):
+    dataDict = {}
+
+    # Get the number of car images:
+    dataDict[ "nCars" ] = len( carImageList )
+
+    # Get the number of non-car images:
+    dataDict[ "nNotCars" ] = len( notCarImageList )
+
+    # Take a sample image and get the shape and type:
+    sampleImage = mpimg.imread( carImageList[ 0 ] )
+
+    dataDict[ "imageShape" ] = sampleImage.shape
+    dataDict[ "dataType" ] = sampleImage.dtype
+
+    return dataDict
+
+'''
 This function is used to train the Support Vector Machine.
 
 This function will save the trained data in a pickle file. 
