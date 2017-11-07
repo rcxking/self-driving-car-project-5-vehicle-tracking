@@ -16,6 +16,7 @@ import numpy as np
 import pickle
 from matplotlib import pyplot as plt
 from skimage.feature import hog
+from sklearn.preprocessing import StandardScaler 
 
 # Constants
 TEST_IMAGES_FOLDER = "./test_images/"
@@ -128,6 +129,23 @@ def GetHOGFeatures( img, orient, pixelsPerCell, cellsPerBlock, vis=False, featur
         return features
 
 '''
+Given a list of feature vectors, return an array
+stack of the normalized feature vectors.
+'''
+def NormalizeFeatureVectors( featureList ):
+    
+    # Create an array stack (StandardScaler needs np.float64):
+    featureStack = np.vstack( featureList ).astype( np.float64 )
+
+    # Fit a per-column scaler:
+    featureScaler = StandardScaler().fit( featureStack )
+
+    # Apply the scaler to the featureStack:
+    scaledFeatures = featureScaler.transform( featureStack )
+
+    return scaledFeatures
+
+'''
 This function takes in a list of strings of filenames from the
 vehicles and non-vehicles datasets.  A dictionary is constructed
 to give the following information:
@@ -160,6 +178,12 @@ This function is used to train the Support Vector Machine.
 This function will save the trained data in a pickle file. 
 '''
 def TrainClassifier():
+
+    '''
+    TODO: We can combine features (say HSV + HOG) into a
+    single feature vector, but need to normalize the data. 
+    '''
+
     pass
 
 '''
