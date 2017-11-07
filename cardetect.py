@@ -113,6 +113,21 @@ def ComputeResizedSpatialHistogram( img, colorSpace = 'RGB', size = (32, 32 ) ):
     return features
 
 '''
+This function computes a histogram of oriented gradients (HOG)
+feature vector.  You can also specify whether you want to visualize
+the HOG or not.
+'''
+def GetHOGFeatures( img, orient, pixelsPerCell, cellsPerBlock, vis=False, featureVec=True ):
+
+    # Get the features and a visualiation (if desired):
+    features, hogImage = hog( img, orientations = orient, pixels_per_cell = ( pixelsPerCell, pixelsPerCell ), cells_per_block = ( cell_per_block, cell_per_block ), visualize = vis, feature_vector = featureVec )
+
+    if vis:
+        return features, hogImage
+    else:
+        return features
+
+'''
 This function takes in a list of strings of filenames from the
 vehicles and non-vehicles datasets.  A dictionary is constructed
 to give the following information:
