@@ -14,13 +14,25 @@ import glob
 import sys
 import numpy as np
 import pickle
+import glob
 from matplotlib import pyplot as plt
 from skimage.feature import hog
 from sklearn.preprocessing import StandardScaler 
+from sklearn.model_selection import train_test_split
 
 # Constants
+
+# Folder to training images:
+TRAINING_DATA_FOLDER = "./training_data/"
+VEHICLE_IMAGES_FOLDER = TRAINING_DATA_FOLDER + "vehicles/"
+NONVEHICLE_IMAGES_FOLDER = TRAINING_DATA_FOLDER + "non-vehicles/"
+
 TEST_IMAGES_FOLDER = "./test_images/"
 OUTPUT_IMAGES_FOLDER = "./output_images/"
+
+# Globs to get all PNG files in the training data folders:
+vehicleImages = glob.glob( VEHICLE_IMAGES_FOLDER + "/**/*.png" )
+nonVehicleImages = glob.glob( NONVEHICLE_IMAGES_FOLDER + "/**/*.png" )
 
 # Set this flag to True to enable debug images:
 displayImages = True
