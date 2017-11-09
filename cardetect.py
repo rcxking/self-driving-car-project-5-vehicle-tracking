@@ -16,9 +16,11 @@ import numpy as np
 import pickle
 import glob
 from matplotlib import pyplot as plt
+import matplotlib.image as mpimg
 from skimage.feature import hog
 from sklearn.preprocessing import StandardScaler 
 from sklearn.model_selection import train_test_split
+from sklearn.svm import LinearSVC
 
 # Constants
 
@@ -195,8 +197,16 @@ def TrainClassifier():
     TODO: We can combine features (say HSV + HOG) into a
     single feature vector, but need to normalize the data. 
     '''
+    
+    # Print dataset statistics:
+    datasetStats = GetDatasetStats( vehicleImages, nonVehicleImages )
+    print( "Number of vehicle images: " + str( datasetStats[ "nCars" ] ) )
+    print( "Number of non-vehicle images: " + str( datasetStats[ "nNotCars" ] ) )
+    print( "Image Shape: " + str( datasetStats[ "imageShape" ] ) )
+    print( "Data Type: " + str( datasetStats[ "dataType" ] ) )
 
-    pass
+    # The Linear Support Vector Machine:
+    svm = LinearSVC()
 
 '''
 Vehicle Detection Pipeline
