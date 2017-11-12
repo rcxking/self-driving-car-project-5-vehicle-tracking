@@ -117,12 +117,11 @@ def ComputeColorHistogram( img, nbins = 32, binsRange = ( 0, 256 ) ):
     return redHist, greenHist, blueHist, binCenters, histFeatures
     
 '''
-Helper function to resize a given RGB image and return
+Helper function to resize a given image and return
 a 1-Dimensional spatial histogram. 
 '''
-def ComputeResizedSpatialHistogram( img, colorSpace = 'RGB', size = (32, 32 ) ):
+def ComputeResizedSpatialHistogram( img, size = (32, 32 ) ):
 
-    # TODO: Have color space conversions here:
     features = cv2.resize( img, size ).ravel()
 
     return features
@@ -216,9 +215,13 @@ def GetFeatureVectors( imgList, colorspace="RGB" ):
                 featureImg = cv2.cvtColor( nextImage, cv2.COLOR_RGB2YUV )
             elif colorspace == "YCrCb":
                 featureImg = cv2.cvtColor( nextImage, cv2.COLOR_RGB2YCrCb )
-
         else:
             featureImg = np.copy( nextImage )
+
+        # Extract Spatial Features:
+        spatialFeatures = ComputeResizedSpatialHistogram( featureImg, size = ( 32, 32 ) )
+
+        featureVec.append( spatialFeatures )
 
     return featureVec
 
@@ -243,7 +246,7 @@ def TrainClassifier():
     print( "Data Type: " + str( datasetStats[ "dataType" ] ) )
 
     # Display a sample image:
-    DisplayImage( mpimg.imread( vehicleImages[ 0 ] ) )
+    #DisplayImage( mpimg.imread( vehicleImages[ 0 ] ) )
 
     '''
     Extract HOG and Color Features from the vehicle and
@@ -260,8 +263,16 @@ def TrainClassifier():
     hogChannel = 0 
 
     # Extract Features for Vehicles:
-   
+    vehicleFeatures = GetFeatureVectors( vehicleImages, "RGB" )
+
     # Extract Features for Non-Vehicles:
+    nonVehicleFeatures = GetFeatureVectors( nonVehicleImages, "RGB" )
+
+    # Create a normalized array stack of features:
+    featureList = [ vehicleFeatures, nonVehicleFeatures ]
+    normalizedFeatures = NormalizeFeatureVectors( featureList )
+
+    print( "normalizedFeatures length: " + str( len( normalizedFeatures ) ) )
 
     '''
     Create the labels vector. A 1 indicates a vehicle image; a 0 indicates
@@ -269,8 +280,24 @@ def TrainClassifier():
     '''
     y_labels = np.hstack( ( np.ones( datasetStats[ "nCars" ] ), np.zeros( datasetStats[ "nNotCars" ] ) ) ) 
 
+    print( "y_labels length: " + str( len( y_labels ) ) )
+
+    # Create training and testing data sets:
+    randNum = np.random.randint( 0, 100 )
+    X_train, X_test, y_train, y_test = train_test_split( normalizedFeatures, y_labels, test_size = 0.2, random_state = randNum )
+
     # The Linear Support Vector Machine:
     svm = LinearSVC()
+
+    # Fit the data sets:
+    print( "Now fitting X_train and y_train" )
+    svm.fit( X_train, y_train )
+
+    # Test the accuracy of the SVM:
+    print( "Accuracy of SVM:" )
+    print( round( svm.score( X_test, y_test ), 4 ) )
+
+    print( "Done training support vector machine" )
 
 '''
 Vehicle Detection Pipeline
