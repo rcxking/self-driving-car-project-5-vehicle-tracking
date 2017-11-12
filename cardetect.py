@@ -15,7 +15,9 @@ import sys
 import numpy as np
 import pickle
 import glob
+import random
 from matplotlib import pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.image as mpimg
 from skimage.feature import hog
 from sklearn.preprocessing import StandardScaler 
@@ -74,7 +76,23 @@ def Plot3D( pixels, rgb, axis_labels = list( "RGB" ), axis_limits = ( ( 0, 255 )
 
     # Create figure and 3-D Axes:
     fig = plt.figure( figsize = ( 8, 8 ) )
-    
+    ax = Axes3D( fig )
+
+    # Set axis limits:
+    ax.set_xlim( *axis_limits[ 0 ] )
+    ax.set_ylim( *axis_limits[ 1 ] )
+    ax.set_zlim( *axis_limits[ 2 ] )
+
+    # Set axis labels and sizes:
+    ax.tick_params( axis = 'both', which = 'major', labelsize = 14, pad = 8 )
+    ax.set_xlabel( axis_labels[ 0 ], fontsize = 16, labelpad = 16 )
+    ax.set_ylabel( axis_labels[ 1 ], fontsize = 16, labelpad = 16 )
+    ax.set_zlabel( axis_labels[ 2 ], fontsize = 16, labelpad = 16 )
+
+    # Plot pixel values with colors given in rgb:
+    ax.scatter( pixels[ :, :, 0 ].ravel(), pixels[ :, :, 1 ].ravel(), pixels[ :, :, 2 ].ravel(), c = rgb.reshape( ( -1, 3 ) ), edgecolors = 'none' )
+
+    return ax
 
 '''
 Helper function to draw a series of bounding boxes on the provided
@@ -248,11 +266,6 @@ This function will save the trained data in a pickle file.
 '''
 def TrainClassifier():
 
-    '''
-    TODO: We can combine features (say HSV + HOG) into a
-    single feature vector, but need to normalize the data. 
-    '''
-    
     # Print dataset statistics:
     datasetStats = GetDatasetStats( vehicleImages, nonVehicleImages )
     print( "Number of vehicle images: " + str( datasetStats[ "nCars" ] ) )
@@ -262,6 +275,33 @@ def TrainClassifier():
 
     # Display a sample image:
     #DisplayImage( mpimg.imread( vehicleImages[ 0 ] ) )
+
+    '''
+    DEBUG ONLY: Uncomment these lines to generate 3D plots for
+    a vehicle and non-vehicle image.  Use this to help determine
+    which colorspace to work in.
+    '''
+    randNum = random.randint( 0, min( datasetStats[ "nCars" ], datasetStats[ "nNotCars" ] ) ) 
+    vehicleImg = cv2.imread( vehicleImages[ randNum ] ) #mpimg.imread( vehicleImages[ randNum ] )
+    nonVehicleImg = cv2.imread( nonVehicleImages[ randNum ] ) #mpimg.imread( nonVehicleImages[ randNum ] )
+
+    #DisplayImage( vehicleImg )
+
+    vehicleImg = cv2.cvtColor( vehicleImg, cv2.COLOR_BGR2RGB )
+    nonVehicleImg = cv2.cvtColor( nonVehicleImg, cv2.COLOR_BGR2RGB )
+
+    vehicleRGB = vehicleImg / 255.
+    nonVehicleRGB = nonVehicleImg / 255.
+
+    #vehicleImg = cv2.cvtColor( vehicleImg, cv2.COLOR_RGB2HSV )
+
+    Plot3D( vehicleImg, vehicleRGB, axis_labels = list( "RGB" ) )
+    plt.show()
+
+    Plot3D( nonVehicleImg, nonVehicleRGB, axis_labels = list( "RGB" ) )
+    plt.show()
+
+    return
 
     '''
     Extract HOG and Color Features from the vehicle and
