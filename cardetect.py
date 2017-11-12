@@ -68,6 +68,15 @@ def DisplayGrayImage( img ):
     plt.show()
 
 '''
+Helper function to generate a 3-D Plot of an image:
+'''
+def Plot3D( pixels, rgb, axis_labels = list( "RGB" ), axis_limits = ( ( 0, 255 ), ( 0, 255 ), ( 0, 255 ) ) ):
+
+    # Create figure and 3-D Axes:
+    fig = plt.figure( figsize = ( 8, 8 ) )
+    
+
+'''
 Helper function to draw a series of bounding boxes on the provided
 image.
 
@@ -134,11 +143,13 @@ the HOG or not.
 def GetHOGFeatures( img, orient, pixelsPerCell, cellsPerBlock, vis=False, featureVec=True ):
 
     # Get the features and a visualiation (if desired):
-    features, hogImage = hog( img, orientations = orient, pixels_per_cell = ( pixelsPerCell, pixelsPerCell ), cells_per_block = ( cell_per_block, cell_per_block ), visualize = vis, feature_vector = featureVec )
-
     if vis:
+        features, hogImage = hog( img, orientations = orient, pixels_per_cell = ( pixelsPerCell, pixelsPerCell ), cells_per_block = ( cellsPerBlock, cellsPerBlock ), transform_sqrt = True, visualise = vis, feature_vector = featureVec )
+
         return features, hogImage
     else:
+        features = hog( img, orientations = orient, pixels_per_cell = ( pixelsPerCell, pixelsPerCell ), cells_per_block = ( cellsPerBlock, cellsPerBlock ), transform_sqrt = True, visualise = vis, feature_vector = featureVec )
+
         return features
 
 '''
@@ -193,7 +204,7 @@ performs the following steps:
 2) Convert from RGB to specified colorspace
 3) 
 '''
-def GetFeatureVectors( imgList, colorspace="RGB" ):
+def GetFeatureVectors( imgList, colorspace, orient, pixelsPerCell, cellsPerBlock ):
 
     # Feature vector list:
     featureVec = []
@@ -221,7 +232,11 @@ def GetFeatureVectors( imgList, colorspace="RGB" ):
         # Extract Spatial Features:
         spatialFeatures = ComputeResizedSpatialHistogram( featureImg, size = ( 32, 32 ) )
 
-        featureVec.append( spatialFeatures )
+        # Extract HOG Features:
+	#def GetHOGFeatures( img, orient, pixelsPerCell, cellsPerBlock, vis=False, featureVec=True )
+        hogFeatures = GetHOGFeatures( featureImg[ :, :, 0 ], orient, pixelsPerCell, cellsPerBlock, False, True )
+
+        featureVec.append( np.concatenate( ( spatialFeatures, hogFeatures ) ) )
 
     return featureVec
 
@@ -262,11 +277,12 @@ def TrainClassifier():
     cellsPerBlock = 2
     hogChannel = 0 
 
+    # def GetFeatureVectors( imgList, colorspace="RGB", orient, pixelsPerCell, cellsPerBlock ):
     # Extract Features for Vehicles:
-    vehicleFeatures = GetFeatureVectors( vehicleImages, "RGB" )
+    vehicleFeatures = GetFeatureVectors( vehicleImages, "RGB", orient, pixelsPerCell, cellsPerBlock )
 
     # Extract Features for Non-Vehicles:
-    nonVehicleFeatures = GetFeatureVectors( nonVehicleImages, "RGB" )
+    nonVehicleFeatures = GetFeatureVectors( nonVehicleImages, "RGB", orient, pixelsPerCell, cellsPerBlock )
 
     # Create a normalized array stack of features:
     featureList = [ vehicleFeatures, nonVehicleFeatures ]
