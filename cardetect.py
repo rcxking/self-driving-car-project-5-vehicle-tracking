@@ -324,7 +324,7 @@ def TrainClassifier():
     1) Colorspace to use (RGB, HSV, LUV, YUV)
     2) orient 
     '''
-    colorspace = "RGB"
+    colorspace = "HSV"
     orient = 9
     pixelsPerCell = 8
     cellsPerBlock = 2
@@ -332,10 +332,10 @@ def TrainClassifier():
 
     # def GetFeatureVectors( imgList, colorspace="RGB", orient, pixelsPerCell, cellsPerBlock ):
     # Extract Features for Vehicles:
-    vehicleFeatures = GetFeatureVectors( vehicleImages, "RGB", orient, pixelsPerCell, cellsPerBlock )
+    vehicleFeatures = GetFeatureVectors( vehicleImages, colorspace, orient, pixelsPerCell, cellsPerBlock )
 
     # Extract Features for Non-Vehicles:
-    nonVehicleFeatures = GetFeatureVectors( nonVehicleImages, "RGB", orient, pixelsPerCell, cellsPerBlock )
+    nonVehicleFeatures = GetFeatureVectors( nonVehicleImages, colorspace, orient, pixelsPerCell, cellsPerBlock )
 
     # Create a normalized array stack of features:
     featureList = [ vehicleFeatures, nonVehicleFeatures ]
