@@ -187,6 +187,43 @@ def GetDatasetStats( carImageList, notCarImageList ):
     return dataDict
 
 '''
+This function takes in a list of images, then
+performs the following steps:
+
+1) Open the image in RGB format
+2) Convert from RGB to specified colorspace
+3) 
+'''
+def GetFeatureVectors( imgList, colorspace="RGB" ):
+
+    # Feature vector list:
+    featureVec = []
+
+    # Step 1: Open the image in RGB format:
+    for fileName in imgList:
+        nextImage = mpimg.imread( fileName )
+
+        # Step 2: Convert the image to the desired colorspace:
+        if colorspace != "RGB":
+
+            if colorspace == "HSV":
+                featureImg = cv2.cvtColor( nextImage, cv2.COLOR_RGB2HSV )
+            elif colorspace == "LUV":
+                featureImg = cv2.cvtColor( nextImage, cv2.COLOR_RGB2LUV )
+            elif colorspace == "HLS":
+                featureImg = cv2.cvtColor( nextImage, cv2.COLOR_RGB2HLS )
+            elif colorspace == "YUV":
+                featureImg = cv2.cvtColor( nextImage, cv2.COLOR_RGB2YUV )
+            elif colorspace == "YCrCb":
+                featureImg = cv2.cvtColor( nextImage, cv2.COLOR_RGB2YCrCb )
+
+        else:
+            featureImg = np.copy( nextImage )
+
+    return featureVec
+
+
+'''
 This function is used to train the Support Vector Machine.
 
 This function will save the trained data in a pickle file. 
@@ -204,6 +241,33 @@ def TrainClassifier():
     print( "Number of non-vehicle images: " + str( datasetStats[ "nNotCars" ] ) )
     print( "Image Shape: " + str( datasetStats[ "imageShape" ] ) )
     print( "Data Type: " + str( datasetStats[ "dataType" ] ) )
+
+    # Display a sample image:
+    DisplayImage( mpimg.imread( vehicleImages[ 0 ] ) )
+
+    '''
+    Extract HOG and Color Features from the vehicle and
+    non-vehicle datasets.
+
+    The following parameters can be tuned:
+    1) Colorspace to use (RGB, HSV, LUV, YUV)
+    2) orient 
+    '''
+    colorspace = "RGB"
+    orient = 9
+    pixelsPerCell = 8
+    cellsPerBlock = 2
+    hogChannel = 0 
+
+    # Extract Features for Vehicles:
+   
+    # Extract Features for Non-Vehicles:
+
+    '''
+    Create the labels vector. A 1 indicates a vehicle image; a 0 indicates
+    a non-vehicle image.
+    '''
+    y_labels = np.hstack( ( np.ones( datasetStats[ "nCars" ] ), np.zeros( datasetStats[ "nNotCars" ] ) ) ) 
 
     # The Linear Support Vector Machine:
     svm = LinearSVC()
