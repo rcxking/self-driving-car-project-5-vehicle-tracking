@@ -281,27 +281,40 @@ def TrainClassifier():
     a vehicle and non-vehicle image.  Use this to help determine
     which colorspace to work in.
     '''
-    randNum = random.randint( 0, min( datasetStats[ "nCars" ], datasetStats[ "nNotCars" ] ) ) 
-    vehicleImg = cv2.imread( vehicleImages[ randNum ] ) #mpimg.imread( vehicleImages[ randNum ] )
-    nonVehicleImg = cv2.imread( nonVehicleImages[ randNum ] ) #mpimg.imread( nonVehicleImages[ randNum ] )
 
-    #DisplayImage( vehicleImg )
+    if False:
+        randNum = random.randint( 0, min( datasetStats[ "nCars" ], datasetStats[ "nNotCars" ] ) ) 
+        vehicleImg = cv2.imread( vehicleImages[ randNum ] ) #mpimg.imread( vehicleImages[ randNum ] )
+        nonVehicleImg = cv2.imread( nonVehicleImages[ randNum ] ) #mpimg.imread( nonVehicleImages[ randNum ] )
 
-    vehicleImg = cv2.cvtColor( vehicleImg, cv2.COLOR_BGR2RGB )
-    nonVehicleImg = cv2.cvtColor( nonVehicleImg, cv2.COLOR_BGR2RGB )
+        vehicleImg = cv2.cvtColor( vehicleImg, cv2.COLOR_BGR2RGB )
+        nonVehicleImg = cv2.cvtColor( nonVehicleImg, cv2.COLOR_BGR2RGB )
 
-    vehicleRGB = vehicleImg / 255.
-    nonVehicleRGB = nonVehicleImg / 255.
+        vehicleRGB = vehicleImg / 255.
+        nonVehicleRGB = nonVehicleImg / 255.
 
-    #vehicleImg = cv2.cvtColor( vehicleImg, cv2.COLOR_RGB2HSV )
+        # Plot is linearly seperable
+        vehicleImgHSV = cv2.cvtColor( vehicleImg, cv2.COLOR_RGB2HSV )
+        nonVehicleImgHSV = cv2.cvtColor( nonVehicleImg, cv2.COLOR_RGB2HSV )
 
-    Plot3D( vehicleImg, vehicleRGB, axis_labels = list( "RGB" ) )
-    plt.show()
+        # Plot is linearly seperable
+        vehicleImgHLS = cv2.cvtColor( vehicleImg, cv2.COLOR_RGB2HLS )
+        nonVehicleImgHLS = cv2.cvtColor( nonVehicleImg, cv2.COLOR_RGB2HLS )
+    
+        # Plot is not linearly seperable
+        vehicleImgYUV = cv2.cvtColor( vehicleImg, cv2.COLOR_RGB2YUV )
+        nonVehicleImgYUV = cv2.cvtColor( nonVehicleImg, cv2.COLOR_RGB2YUV )
 
-    Plot3D( nonVehicleImg, nonVehicleRGB, axis_labels = list( "RGB" ) )
-    plt.show()
+        vehicleImgLUV = cv2.cvtColor( vehicleImg, cv2.COLOR_RGB2LUV )
+        nonVehicleImgLUV = cv2.cvtColor( nonVehicleImg, cv2.COLOR_RGB2LUV )
 
-    return
+        Plot3D( vehicleImgLUV, vehicleRGB, axis_labels = list( "LUV" ) )
+        plt.show()
+
+        Plot3D( nonVehicleImgLUV, nonVehicleRGB, axis_labels = list( "LUV" ) )
+        plt.show()
+
+        return
 
     '''
     Extract HOG and Color Features from the vehicle and
