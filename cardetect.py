@@ -252,7 +252,7 @@ def GetFeatureVectors( imgList, colorspace, orient, pixelsPerCell, cellsPerBlock
 
         # Extract HOG Features:
 	#def GetHOGFeatures( img, orient, pixelsPerCell, cellsPerBlock, vis=False, featureVec=True )
-        hogFeatures = GetHOGFeatures( featureImg[ :, :, 0 ], orient, pixelsPerCell, cellsPerBlock, False, True )
+        hogFeatures = GetHOGFeatures( featureImg[ :, :, 1 ], orient, pixelsPerCell, cellsPerBlock, False, True )
 
         featureVec.append( np.concatenate( ( spatialFeatures, hogFeatures ) ) )
 
