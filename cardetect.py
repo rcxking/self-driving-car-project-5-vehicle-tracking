@@ -13,7 +13,6 @@ import cv2
 import glob
 import sys
 import numpy as np
-import pickle
 import glob
 import random
 from matplotlib import pyplot as plt
@@ -23,6 +22,7 @@ from skimage.feature import hog
 from sklearn.preprocessing import StandardScaler 
 from sklearn.model_selection import train_test_split
 from sklearn.svm import LinearSVC
+from sklearn.externals import joblib
 
 # Constants
 
@@ -33,6 +33,9 @@ NONVEHICLE_IMAGES_FOLDER = TRAINING_DATA_FOLDER + "non-vehicles/"
 
 TEST_IMAGES_FOLDER = "./test_images/"
 OUTPUT_IMAGES_FOLDER = "./output_images/"
+
+# Name of the pickle file for SVM:
+PICKLE_FILE = "./svm.pickle"
 
 # Globs to get all PNG files in the training data folders:
 vehicleImages = glob.glob( VEHICLE_IMAGES_FOLDER + "/**/*.png" )
@@ -365,6 +368,9 @@ def TrainClassifier():
     # Test the accuracy of the SVM:
     print( "Accuracy of SVM:" )
     print( round( svm.score( X_test, y_test ), 4 ) )
+
+    # Save the SVM data into file:
+    joblib.dump( svm, PICKLE_FILE ) 
 
     print( "Done training support vector machine" )
 
