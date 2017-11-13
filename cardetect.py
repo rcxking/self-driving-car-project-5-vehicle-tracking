@@ -384,8 +384,8 @@ vehicles
 '''
 def CarDetectPipeline( imageName ):
 
-    # Open the image in BGR format:
-    image = cv2.imread( imageName )
+    # Open the image in RGB format:
+    image = mpimg.imread( imageName )
 
     # TODO: Replace this when the pipeline is complete:
     return np.copy( image )
@@ -419,7 +419,7 @@ def main():
                 
                 detectedImage = CarDetectPipeline( imagePath )
 
-                DisplayImage( detectedImage, True )
+                DisplayImage( detectedImage )
 
         if "video" in sys.argv:
             # TODO: We're expecting the video file to analyze to be in the following argument:  
