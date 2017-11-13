@@ -442,9 +442,18 @@ def CarDetectPipeline( imageName ):
     # Open the image in RGB format:
     image = mpimg.imread( imageName )
 
+    # Load the classifier data from file:
+    svm = joblib.load( PICKLE_FILE )  
+
     # GetSlidingWindows( img, xStartStop=[None, None], yStartStop=[None, None], xyWindow=(64,64), xyOverlap=(0.5, 0.5) )
 
     slidingWindows = GetSlidingWindows( image )
+
+    for window in slidingWindows:
+        # Extract the next window:
+        imgWindow = cv2.resize( image[ window[ 0 ][ 1 ]:window[ 1 ][ 1 ], window[ 0 ][ 0 ] : window[ 1 ][ 0 ] ], ( 64, 64 ) )
+
+        #DisplayImage( imgWindow )
 
     # TODO: Replace this when the pipeline is complete:
     return np.copy( image )
