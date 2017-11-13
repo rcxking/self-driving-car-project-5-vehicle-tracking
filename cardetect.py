@@ -375,6 +375,61 @@ def TrainClassifier():
     print( "Done training support vector machine" )
 
 '''
+This function takes in a (X,Y) start and end location
+and performs a sliding window search across an input
+image.  Returns a list of sliding windows.   
+'''
+def GetSlidingWindows( img, xStartStop=[None, None], yStartStop=[None, None], xyWindow=(64,64), xyOverlap=(0.5, 0.5) ):
+
+    # Set image limits if they don't already exist:
+    if xStartStop[ 0 ] == None:
+        xStartStop[ 0 ] = 0
+    if xStartStop[ 1 ] == None:
+        xStartStop[ 1 ] = img.shape[ 1 ]
+    if yStartStop[ 0 ] == None:
+        yStartStop[ 0 ] = 0
+    if yStartStop[ 1 ] == None:
+        yStartStop[ 1 ] = img.shape[ 0 ]
+
+    # Compute Length of Search Area:
+    xSearch = xStartStop[ 1 ] - xStartStop[ 0 ]
+    ySearch = yStartStop[ 1 ] - yStartStop[ 0 ]
+
+    '''
+    Compute the number of pixels each window
+    covers.
+    '''
+    xStepPixels = np.int( xyWindow[ 0 ] * ( 1 - xyOverlap[ 0 ] ) )
+    yStepPixels = np.int( xyWindow[ 1 ] * ( 1 - xyOverlap[ 1 ] ) )
+
+
+    # Compute number of windows:
+    xBuff = np.int( xyWindow[ 0 ] * xyOverlap[ 0 ] )
+    yBuff = np.int( xyWindow[ 1 ] * xyOverlap[ 1 ] )
+
+    xNumWindows = np.int( ( xSearch - xBuff ) / xStepPixels )
+    yNumWindows = np.int( ( ySearch - yBuff ) / yStepPixels )
+
+    windowList = []
+
+    print( "xNumWindows: " + str( xNumWindows ) )
+    print( "yNumWindows: " + str( yNumWindows ) )
+
+    for y in range( yNumWindows ):
+        for x in range( xNumWindows ):
+
+            # Compute next window position:
+            startX = ( x * xStepPixels ) + xStartStop[ 0 ]
+            endX = startX + xyWindow[ 0 ]
+            startY = ( y * yStepPixels ) + yStartStop[ 0 ]
+            endY = startY + xyWindow[ 1 ]
+
+            windowList.append( ( ( startX, startY ), ( endX, endY ) ) )
+        
+
+    return windowList
+
+'''
 Vehicle Detection Pipeline
 
 This function takes in the full path of the image
@@ -386,6 +441,10 @@ def CarDetectPipeline( imageName ):
 
     # Open the image in RGB format:
     image = mpimg.imread( imageName )
+
+    # GetSlidingWindows( img, xStartStop=[None, None], yStartStop=[None, None], xyWindow=(64,64), xyOverlap=(0.5, 0.5) )
+
+    slidingWindows = GetSlidingWindows( image )
 
     # TODO: Replace this when the pipeline is complete:
     return np.copy( image )
