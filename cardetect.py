@@ -328,8 +328,8 @@ def TrainClassifier():
     2) orient 
     '''
     colorspace = "HSV"
-    orient = 9
-    pixelsPerCell = 8
+    orient = 16
+    pixelsPerCell = 4
     cellsPerBlock = 2
     hogChannel = 2 
 
