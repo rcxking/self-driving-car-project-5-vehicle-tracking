@@ -225,7 +225,7 @@ performs the following steps:
 2) Convert from RGB to specified colorspace
 3) 
 '''
-def GetFeatureVectors( imgList, colorspace, orient, pixelsPerCell, cellsPerBlock ):
+def GetFeatureVectors( imgList, colorspace, orient, pixelsPerCell, cellsPerBlock, hogChannel ):
 
     # Feature vector list:
     featureVec = []
@@ -255,7 +255,7 @@ def GetFeatureVectors( imgList, colorspace, orient, pixelsPerCell, cellsPerBlock
 
         # Extract HOG Features:
 	#def GetHOGFeatures( img, orient, pixelsPerCell, cellsPerBlock, vis=False, featureVec=True )
-        hogFeatures = GetHOGFeatures( featureImg[ :, :, 1 ], orient, pixelsPerCell, cellsPerBlock, False, True )
+        hogFeatures = GetHOGFeatures( featureImg[ :, :, hogChannel ], orient, pixelsPerCell, cellsPerBlock, False, True )
 
         featureVec.append( np.concatenate( ( spatialFeatures, hogFeatures ) ) )
 
@@ -331,14 +331,14 @@ def TrainClassifier():
     orient = 9
     pixelsPerCell = 8
     cellsPerBlock = 2
-    hogChannel = 0 
+    hogChannel = 2 
 
     # def GetFeatureVectors( imgList, colorspace="RGB", orient, pixelsPerCell, cellsPerBlock ):
     # Extract Features for Vehicles:
-    vehicleFeatures = GetFeatureVectors( vehicleImages, colorspace, orient, pixelsPerCell, cellsPerBlock )
+    vehicleFeatures = GetFeatureVectors( vehicleImages, colorspace, orient, pixelsPerCell, cellsPerBlock, hogChannel )
 
     # Extract Features for Non-Vehicles:
-    nonVehicleFeatures = GetFeatureVectors( nonVehicleImages, colorspace, orient, pixelsPerCell, cellsPerBlock )
+    nonVehicleFeatures = GetFeatureVectors( nonVehicleImages, colorspace, orient, pixelsPerCell, cellsPerBlock, hogChannel )
 
     # Create a normalized array stack of features:
     featureList = [ vehicleFeatures, nonVehicleFeatures ]
