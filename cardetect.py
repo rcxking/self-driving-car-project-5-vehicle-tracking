@@ -34,8 +34,19 @@ NONVEHICLE_IMAGES_FOLDER = TRAINING_DATA_FOLDER + "non-vehicles/"
 TEST_IMAGES_FOLDER = "./test_images/"
 OUTPUT_IMAGES_FOLDER = "./output_images/"
 
+# Tuning Parameters:
+colorspace = "HSV"
+orient = 16
+pixelsPerCell = 4
+cellsPerBlock = 2
+hogChannel = 2
+
+
 # Name of the pickle file for SVM:
 PICKLE_FILE = "./svm.pickle"
+
+# Scaler File:
+SCALER_FILE = "./scaler.pickle"
 
 # Globs to get all PNG files in the training data folders:
 vehicleImages = glob.glob( VEHICLE_IMAGES_FOLDER + "/**/*.png" )
@@ -185,6 +196,9 @@ def NormalizeFeatureVectors( featureList ):
     # Fit a per-column scaler:
     featureScaler = StandardScaler().fit( featureStack )
 
+    # Dump the featureScaler:
+    joblib.dump( featureScaler, SCALER_FILE )
+
     # Apply the scaler to the featureStack:
     scaledFeatures = featureScaler.transform( featureStack )
 
@@ -216,6 +230,20 @@ def GetDatasetStats( carImageList, notCarImageList ):
     dataDict[ "dataType" ] = sampleImage.dtype
 
     return dataDict
+
+'''
+Helper function to extract a feature vector from a single image. 
+'''
+def GetSingleImageFeatures( img, orient, pixelsPerCell, cellsPerBlock, hogChannel ):
+
+    # Extract Spatial Features:
+    spatialFeatures = ComputeResizedSpatialHistogram( img, size = ( 32, 32 ) )
+
+    # Extract HOG Features:
+    #def GetHOGFeatures( img, orient, pixelsPerCell, cellsPerBlock, vis=False, featureVec=True )
+    hogFeatures = GetHOGFeatures( img[ :, :, hogChannel ], orient, pixelsPerCell, cellsPerBlock, False, True )
+
+    return np.concatenate( ( spatialFeatures, hogFeatures ) )
 
 '''
 This function takes in a list of images, then
@@ -250,14 +278,7 @@ def GetFeatureVectors( imgList, colorspace, orient, pixelsPerCell, cellsPerBlock
         else:
             featureImg = np.copy( nextImage )
 
-        # Extract Spatial Features:
-        spatialFeatures = ComputeResizedSpatialHistogram( featureImg, size = ( 32, 32 ) )
-
-        # Extract HOG Features:
-	#def GetHOGFeatures( img, orient, pixelsPerCell, cellsPerBlock, vis=False, featureVec=True )
-        hogFeatures = GetHOGFeatures( featureImg[ :, :, hogChannel ], orient, pixelsPerCell, cellsPerBlock, False, True )
-
-        featureVec.append( np.concatenate( ( spatialFeatures, hogFeatures ) ) )
+        featureVec.append( GetSingleImageFeatures( featureImg, orient, pixelsPerCell, cellsPerBlock, hogChannel ) )
 
     return featureVec
 
@@ -327,12 +348,6 @@ def TrainClassifier():
     1) Colorspace to use (RGB, HSV, LUV, YUV)
     2) orient 
     '''
-    colorspace = "HSV"
-    orient = 16
-    pixelsPerCell = 4
-    cellsPerBlock = 2
-    hogChannel = 2 
-
     # def GetFeatureVectors( imgList, colorspace="RGB", orient, pixelsPerCell, cellsPerBlock ):
     # Extract Features for Vehicles:
     vehicleFeatures = GetFeatureVectors( vehicleImages, colorspace, orient, pixelsPerCell, cellsPerBlock, hogChannel )
@@ -445,6 +460,9 @@ def CarDetectPipeline( imageName ):
     # Load the classifier data from file:
     svm = joblib.load( PICKLE_FILE )  
 
+    # Load the scaler from file:
+    scaler = joblib.load( SCALER_FILE )
+
     # GetSlidingWindows( img, xStartStop=[None, None], yStartStop=[None, None], xyWindow=(64,64), xyOverlap=(0.5, 0.5) )
 
     slidingWindows = GetSlidingWindows( image )
@@ -454,6 +472,19 @@ def CarDetectPipeline( imageName ):
         imgWindow = cv2.resize( image[ window[ 0 ][ 1 ]:window[ 1 ][ 1 ], window[ 0 ][ 0 ] : window[ 1 ][ 0 ] ], ( 64, 64 ) )
 
         #DisplayImage( imgWindow )
+
+        # Extract features for this window:
+        features = GetSingleImageFeatures( imgWindow, orient, pixelsPerCell, cellsPerBlock, hogChannel )
+
+        # Scale the features:
+        scaledFeatures = scaler.transform( np.array( features ).reshape( 1, -1 ) )
+
+        # Prediction:
+        pred = svm.predict( scaledFeatures )
+        print( "Vehicle detected: " + str( pred ) )
+
+        if pred == 1 :
+            DisplayImage( imgWindow )
 
     # TODO: Replace this when the pipeline is complete:
     return np.copy( image )
