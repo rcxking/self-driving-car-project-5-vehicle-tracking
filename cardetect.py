@@ -479,10 +479,35 @@ def CarDetectPipeline( imageName ):
     endY = 625
     imgToSearch = image[ startY:endY, :, : ]
 
-    DisplayImage( imgToSearch )
+    #DisplayImage( imgToSearch )
 
     # Convert the image to search to the desired colorspace:
-    #convertImgToSearch = cv2.cvtColor( imgToSearch,  
+    convertImgToSearch = cv2.cvtColor( imgToSearch, cv2.COLOR_RGB2HSV )
+
+    # Now get the three channels (HSV):
+    ch1 = convertImgToSearch[ :, :, 0 ]
+    ch2 = convertImgToSearch[ :, :, 1 ]
+    ch3 = convertImgToSearch[ :, :, 2 ]
+
+    # Get the number of blocks to analyze:
+    nxBlocks = ( convertImgToSearch.shape[ 1 ] // pixelsPerCell ) - cellsPerBlock + 1
+    nyBlocks = ( convertImgToSearch.shape[ 0 ] // pixelsPerCell ) - cellsPerBlock + 1
+    numFeaturesPerBlock = orient * cellsPerBlock ** 2
+    print( "nxBlocks: " + str( nxBlocks ) )
+    print( "nyBlocks: " + str( nyBlocks ) )
+
+    # Get the features for the cropped image:
+    features = GetSingleImageFeatures( convertImgToSearch, orient, pixelsPerCell, cellsPerBlock, hogChannel )
+
+    cellsPerStep = 2
+
+    for x in range( nxBlocks ):
+        for y in range( nyBlocks ):
+            yPos = y * cellsPerStep
+            xPos = x * cellsPerStep
+
+            print( "xPos: " + str( xPos ) )
+            print( "yPos: " + str( yPos ) )
 
     return np.copy( image )
     
