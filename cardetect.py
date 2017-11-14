@@ -465,7 +465,14 @@ def CarDetectPipeline( imageName ):
 
     # GetSlidingWindows( img, xStartStop=[None, None], yStartStop=[None, None], xyWindow=(64,64), xyOverlap=(0.5, 0.5) )
 
-    slidingWindows = GetSlidingWindows( image )
+    '''
+    Examine only the lower half of the image (so the we'll look at anything
+    from ( 0, imageHeight / 2 ) to ( imageWidth, imageHeight ).
+    '''
+    startX = 0
+    startY = int( image.shape[ 0 ] / 2 )
+
+    slidingWindows = GetSlidingWindows( image, xStartStop = [ startX, None ], yStartStop = [ startY, None ]  )
 
     for window in slidingWindows:
         # Extract the next window:
