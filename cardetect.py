@@ -463,6 +463,29 @@ def CarDetectPipeline( imageName ):
     # Load the scaler from file:
     scaler = joblib.load( SCALER_FILE )
 
+    # Copy of image to draw bounding boxes on:
+    drawImg = np.copy( image )
+    
+    # Normalize the input image:
+    image = image.astype( np.float32 ) / 255
+
+    '''
+    We're only interested in finding vehicles in the bottom
+    half of the image.  Crop out this region.
+
+    Region found by examining images with the GIMP program.
+    '''
+    startY = int( image.shape[ 0 ] / 2 )
+    endY = 625
+    imgToSearch = image[ startY:endY, :, : ]
+
+    DisplayImage( imgToSearch )
+
+    # Convert the image to search to the desired colorspace:
+    #convertImgToSearch = cv2.cvtColor( imgToSearch,  
+
+    return np.copy( image )
+    
     # GetSlidingWindows( img, xStartStop=[None, None], yStartStop=[None, None], xyWindow=(64,64), xyOverlap=(0.5, 0.5) )
 
     '''
