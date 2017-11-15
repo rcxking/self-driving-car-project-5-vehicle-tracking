@@ -333,7 +333,7 @@ def TrainClassifier():
     which colorspace to work in.
     '''
 
-    if False:
+    if True:
         randNum = random.randint( 0, min( datasetStats[ "nCars" ], datasetStats[ "nNotCars" ] ) ) 
         vehicleImg = cv2.imread( vehicleImages[ randNum ] ) #mpimg.imread( vehicleImages[ randNum ] )
         nonVehicleImg = cv2.imread( nonVehicleImages[ randNum ] ) #mpimg.imread( nonVehicleImages[ randNum ] )
@@ -344,25 +344,25 @@ def TrainClassifier():
         vehicleRGB = vehicleImg / 255.
         nonVehicleRGB = nonVehicleImg / 255.
 
-        # Plot is linearly seperable
+        # Possible candidate; car pixels clustered in S-Plane  
         vehicleImgHSV = cv2.cvtColor( vehicleImg, cv2.COLOR_RGB2HSV )
         nonVehicleImgHSV = cv2.cvtColor( nonVehicleImg, cv2.COLOR_RGB2HSV )
 
-        # Plot is linearly seperable
+        # Car Pixels clustered in L-Plane; not as clear as HSV
         vehicleImgHLS = cv2.cvtColor( vehicleImg, cv2.COLOR_RGB2HLS )
         nonVehicleImgHLS = cv2.cvtColor( nonVehicleImg, cv2.COLOR_RGB2HLS )
     
-        # Plot is not linearly seperable
+        # Car Pixels clustered in Y-Plane
         vehicleImgYUV = cv2.cvtColor( vehicleImg, cv2.COLOR_RGB2YUV )
         nonVehicleImgYUV = cv2.cvtColor( nonVehicleImg, cv2.COLOR_RGB2YUV )
 
         vehicleImgLUV = cv2.cvtColor( vehicleImg, cv2.COLOR_RGB2LUV )
         nonVehicleImgLUV = cv2.cvtColor( nonVehicleImg, cv2.COLOR_RGB2LUV )
 
-        Plot3D( vehicleImgLUV, vehicleRGB, axis_labels = list( "LUV" ) )
+        Plot3D( vehicleImgHSV, vehicleRGB, axis_labels = list( "HSV" ) )
         plt.show()
 
-        Plot3D( nonVehicleImgLUV, nonVehicleRGB, axis_labels = list( "LUV" ) )
+        Plot3D( nonVehicleImgHSV, nonVehicleRGB, axis_labels = list( "HSV" ) )
         plt.show()
 
         return
