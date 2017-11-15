@@ -159,13 +159,22 @@ def ComputeColorHistogram( img, nbins = 32, binsRange = ( 0, 256 ) ):
     
 '''
 Helper function to resize a given image and return
-a 1-Dimensional spatial histogram. 
+a 1-Dimensional spatial histogram.
+
+This function assumes that the input image is a three-
+channel image.
+
+The output histogram will have elements such that:
+
+Ch1 - Ch2 - Ch3
 '''
-def ComputeResizedSpatialHistogram( img, size = (32, 32 ) ):
+def ComputeSpatialHistogram( img, size = (32, 32 ) ):
 
-    features = cv2.resize( img, size ).ravel()
+    ch1 = cv2.resize( img[ :, :, 0 ], size ).ravel()
+    ch2 = cv2.resize( img[ :, :, 1 ], size ).ravel()
+    ch3 = cv2.resize( img[ :, :, 2 ], size ).ravel()
 
-    return features
+    return np.hstack( ( ch1, ch2, ch3 ) )
 
 '''
 This function computes a histogram of oriented gradients (HOG)
