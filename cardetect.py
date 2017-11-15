@@ -223,6 +223,15 @@ def AddHeat( heatmap, bboxList ):
     return heatmap
 
 '''
+This function takes in a heatmap image, and zero's out
+any pixels in cells that have less hits than the given
+threshold.
+'''
+def ApplyHeatmapThreshold( heatmap, threshold ):
+    heatmap[ heatmap <= threshold ] = 0
+    return heatmap
+
+'''
 This function takes in a list of strings of filenames from the
 vehicles and non-vehicles datasets.  A dictionary is constructed
 to give the following information:
