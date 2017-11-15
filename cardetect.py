@@ -208,6 +208,21 @@ def NormalizeFeatureVectors( featureList ):
     return scaledFeatures
 
 '''
+This function adds heat to the heatmap
+image for all pixels inside each bounding
+box given in the bboxList.
+
+bboxList is a list of tuples:
+    ( ( x1, y1 ), ( x2, y2 ) )
+'''
+def AddHeat( heatmap, bboxList ):
+    
+    for box in bboxList:
+        heatmap[ box[ 0 ][ 1 ]:box[ 1 ][ 1 ], box[ 0 ][ 0 ]:box[ 1 ][ 0 ] ] += 1
+
+    return heatmap
+
+'''
 This function takes in a list of strings of filenames from the
 vehicles and non-vehicles datasets.  A dictionary is constructed
 to give the following information:
