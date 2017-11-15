@@ -263,14 +263,19 @@ Helper function to extract a feature vector from a single image.
 '''
 def GetSingleImageFeatures( img, orient, pixelsPerCell, cellsPerBlock, hogChannel ):
 
-    # Extract Spatial Features:
-    spatialFeatures = ComputeResizedSpatialHistogram( img, size = ( 32, 32 ) )
+    # Extract Spatial Features from all 3-Channels:
+    spatialFeatures = ComputeSpatialHistogram( img, size = ( 32, 32 ) )
+
+    # Compute the Color Histogram:
+    colorHist = ComputeColorHistogram( img )
 
     # Extract HOG Features:
     #def GetHOGFeatures( img, orient, pixelsPerCell, cellsPerBlock, vis=False, featureVec=True )
-    hogFeatures = GetHOGFeatures( img[ :, :, hogChannel ], orient, pixelsPerCell, cellsPerBlock, False, True )
+    ch1Features = GetHOGFeatures( img[ :, :, 0 ], orient, pixelsPerCell, cellsPerBlock, False, True )
+    ch2Features = GetHOGFeatures( img[ :, :, 1 ], orient, pixelsPerCell, cellsPerBlock, False, True )
+    ch3Features = GetHOGFeatures( img[ :, :, 2 ], orient, pixelsPerCell, cellsPerBlock, False, True )
 
-    return np.concatenate( ( spatialFeatures, hogFeatures ) )
+    return np.concatenate( ( spatialFeatures, colorHist, ch1Features, ch2Features, ch3Features ) )
 
 '''
 This function takes in a list of images, then
@@ -333,7 +338,7 @@ def TrainClassifier():
     which colorspace to work in.
     '''
 
-    if True:
+    if False:
         randNum = random.randint( 0, min( datasetStats[ "nCars" ], datasetStats[ "nNotCars" ] ) ) 
         vehicleImg = cv2.imread( vehicleImages[ randNum ] ) #mpimg.imread( vehicleImages[ randNum ] )
         nonVehicleImg = cv2.imread( nonVehicleImages[ randNum ] ) #mpimg.imread( nonVehicleImages[ randNum ] )
