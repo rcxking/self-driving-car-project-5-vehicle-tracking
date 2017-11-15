@@ -142,20 +142,14 @@ TODO: May want to look at different color spaces (HLS)
 def ComputeColorHistogram( img, nbins = 32, binsRange = ( 0, 256 ) ):
 
     # Compute the individual RGB histograms for the image:
-    redHist = np.histogram( img[ :, :, 0 ], bins = nbins, range = binsRange )
-    greenHist = np.histogram( img[ :, :, 1 ], bins = nbins, range = binsRange )
-    blueHist = np.histogram( img[ :, :, 2 ], bins = nbins, range = binsRange )
-
-    # All the histograms have the same number of bins:
-    binEdges = redHist[ 1 ]
-
-    # Compute the bin centers:
-    binCenters = ( binEdges[ 1: ] + binEdges[ 0 : len( binEdges ) - 1 ] ) / 2
+    ch1 = np.histogram( img[ :, :, 0 ], bins = nbins, range = binsRange )
+    ch2 = np.histogram( img[ :, :, 1 ], bins = nbins, range = binsRange )
+    ch3 = np.histogram( img[ :, :, 2 ], bins = nbins, range = binsRange )
 
     # Concatenate the histograms to form the feature vector:
-    histFeatures = np.concatenate( redHist[ 0 ], greenHist[ 0 ], blueHist[ 0 ] )
+    histFeatures = np.concatenate( ( ch1[ 0 ], ch2[ 0 ], ch3[ 0 ] ) )
 
-    return redHist, greenHist, blueHist, binCenters, histFeatures
+    return histFeatures
     
 '''
 Helper function to resize a given image and return
