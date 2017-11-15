@@ -482,34 +482,66 @@ def CarDetectPipeline( imageName ):
     #DisplayImage( imgToSearch )
 
     # Convert the image to search to the desired colorspace:
-    convertImgToSearch = cv2.cvtColor( imgToSearch, cv2.COLOR_RGB2HSV )
+    ctransToSearch = cv2.cvtColor( imgToSearch, cv2.COLOR_RGB2HSV )
 
     # Now get the three channels (HSV):
-    ch1 = convertImgToSearch[ :, :, 0 ]
-    ch2 = convertImgToSearch[ :, :, 1 ]
-    ch3 = convertImgToSearch[ :, :, 2 ]
+    ch1 = ctransToSearch[ :, :, 0 ]
+    ch2 = ctransToSearch[ :, :, 1 ]
+    ch3 = ctransToSearch[ :, :, 2 ]
 
     # Get the number of blocks to analyze:
-    nxBlocks = ( convertImgToSearch.shape[ 1 ] // pixelsPerCell ) - cellsPerBlock + 1
-    nyBlocks = ( convertImgToSearch.shape[ 0 ] // pixelsPerCell ) - cellsPerBlock + 1
+    nxBlocks = ( ch1.shape[ 1 ] // pixelsPerCell ) - cellsPerBlock + 1
+    nyBlocks = ( ch1.shape[ 0 ] // pixelsPerCell ) - cellsPerBlock + 1
     numFeaturesPerBlock = orient * cellsPerBlock ** 2
     print( "nxBlocks: " + str( nxBlocks ) )
     print( "nyBlocks: " + str( nyBlocks ) )
 
+    # Each image is 64 pixels (8 cells @ 8 pixels per cell):
+    window = 64
+    nBlocksPerWindow = ( window // pixelsPerCell ) - cellsPerBlock + 1
+    cellsPerStep = 2
+    nxSteps = ( nxBlocks - nBlocksPerWindow ) // cellsPerStep
+    nySteps = ( nyBlocks - nBlocksPerWindow ) // cellsPerStep
+
     # Get the features for the cropped image:
     features = GetSingleImageFeatures( convertImgToSearch, orient, pixelsPerCell, cellsPerBlock, hogChannel )
 
-    cellsPerStep = 2
+    for xb in range( nxSteps ):
+        for yb in range( nySteps ):
+            yPos = yb * cellsPerStep
+            xPos = xb * cellsPerStep
 
-    for x in range( nxBlocks ):
-        for y in range( nyBlocks ):
-            yPos = y * cellsPerStep
-            xPos = x * cellsPerStep
+            #print( "xPos: " + str( xPos ) )
+            #print( "yPos: " + str( yPos ) )
 
-            print( "xPos: " + str( xPos ) )
-            print( "yPos: " + str( yPos ) )
+            # Extract HOG features for this patch:
+            hogFeat1 = features[ yPos : yPos + nBlocksPerWindow, xPos : xPos + nBlocksPerWindow ].ravel()
 
-    return np.copy( image )
+            hogFeatures = np.hstack( hogFeat1 )
+
+            xLeft = xPos * pixelsPerCell
+            yTop = yPos * pixelsPerCell
+
+            # Extract the image patch:
+            subImg = cv2.resize( ctransToSearch[ yTop : yTop + window, xLeft: xLeft + window ], (64, 64) ) 
+
+            # Get Color Features:
+            spatialFeatures = ComputeResizedSpatialHistogram( subImg )
+
+            # Scale features and make a prediction:
+            testFeatures = X_scaler.transform( np.hstack( ( spatialFeatures , hogFeatures ) ).reshape( 1, -1 ) ) 
+
+            testPrediction = svm.predict( testFeatures )
+
+            # Does the SVM predict a vehicle in the sub image?
+            if testPrediction == 1:
+                xboxLeft = np.int( xLeft )
+                yTopDraw = np.int( yTop )
+                winDraw = np.int( window )
+
+                cv2.rectangle( drawImage, ( xboxLeft, yTopDraw + yStart ), ( xboxLeft + winDraw, yTopDraw + winDraw + yStart ), ( 0, 0, 255 ), 6 )
+
+    return drawImg
     
     # GetSlidingWindows( img, xStartStop=[None, None], yStartStop=[None, None], xyWindow=(64,64), xyOverlap=(0.5, 0.5) )
 
