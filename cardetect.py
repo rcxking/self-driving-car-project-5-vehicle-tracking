@@ -541,8 +541,6 @@ def CarDetectPipeline( imageName ):
     ch3Features = GetHOGFeatures( ch3, orient, pixelsPerCell, cellsPerBlock, False, False )
     #features = GetSingleImageFeatures( convertImgToSearch, orient, pixelsPerCell, cellsPerBlock, hogChannel )
 
-    return np.copy( image )
-
     for xb in range( nxSteps ):
         for yb in range( nySteps ):
             yPos = yb * cellsPerStep
@@ -552,9 +550,13 @@ def CarDetectPipeline( imageName ):
             #print( "yPos: " + str( yPos ) )
 
             # Extract HOG features for this patch:
-            hogFeat1 = features[ yPos : yPos + nBlocksPerWindow, xPos : xPos + nBlocksPerWindow ].ravel()
+            #hogFeat1 = features[ yPos : yPos + nBlocksPerWindow, xPos : xPos + nBlocksPerWindow ].ravel()
+            
+            hogFeat1 = ch1Features[ yPos : yPos + nBlocksPerWindow, xPos : xPos + nBlocksPerWindow ].ravel()
+            hogFeat2 = ch2Features[ yPos : yPos + nBlocksPerWindow, xPos : xPos + nBlocksPerWindow ].ravel()
+            hogFeat3 = ch3Features[ yPos : yPos + nBlocksPerWindow, xPos : xPos + nBlocksPerWindow ].ravel()
 
-            hogFeatures = np.hstack( hogFeat1 )
+            hogFeatures = np.hstack( ( hogFeat1, hogFeat2, hogFeat3 ) )
 
             xLeft = xPos * pixelsPerCell
             yTop = yPos * pixelsPerCell
@@ -563,10 +565,11 @@ def CarDetectPipeline( imageName ):
             subImg = cv2.resize( ctransToSearch[ yTop : yTop + window, xLeft: xLeft + window ], (64, 64) ) 
 
             # Get Color Features:
-            spatialFeatures = ComputeResizedSpatialHistogram( subImg )
+            spatialFeatures = ComputeSpatialHistogram( subImg )
+            colorHist = ComputeColorHistogram( subImg )
 
             # Scale features and make a prediction:
-            testFeatures = X_scaler.transform( np.hstack( ( spatialFeatures , hogFeatures ) ).reshape( 1, -1 ) ) 
+            testFeatures = scaler.transform( np.hstack( ( spatialFeatures, colorHist, hogFeatures ) ).reshape( 1, -1 ) ) 
 
             testPrediction = svm.predict( testFeatures )
 
@@ -576,7 +579,7 @@ def CarDetectPipeline( imageName ):
                 yTopDraw = np.int( yTop )
                 winDraw = np.int( window )
 
-                cv2.rectangle( drawImage, ( xboxLeft, yTopDraw + yStart ), ( xboxLeft + winDraw, yTopDraw + winDraw + yStart ), ( 0, 0, 255 ), 6 )
+                cv2.rectangle( drawImg, ( xboxLeft, yTopDraw + startY ), ( xboxLeft + winDraw, yTopDraw + winDraw + startY ), ( 0, 0, 255 ), 6 )
 
     return drawImg
     
