@@ -513,8 +513,15 @@ def CarDetectPipeline( imageName ):
 
     #DisplayImage( imgToSearch )
 
+    imgScale = 1.1
+
     # Convert the image to search to the desired colorspace:
     ctransToSearch = cv2.cvtColor( imgToSearch, cv2.COLOR_RGB2HSV )
+
+    # Scale the image if necessary:
+    if imgScale != 1.0:
+        imgShape = ctransToSearch.shape
+        ctransToSearch = cv2.resize( ctransToSearch, ( np.int( imgShape[ 1 ] / imgScale ), np.int( imgShape[ 0 ] / imgScale ) ) ) 
 
     # Now get the three channels (HSV):
     ch1 = ctransToSearch[ :, :, 0 ]
@@ -575,9 +582,9 @@ def CarDetectPipeline( imageName ):
 
             # Does the SVM predict a vehicle in the sub image?
             if testPrediction == 1:
-                xboxLeft = np.int( xLeft )
-                yTopDraw = np.int( yTop )
-                winDraw = np.int( window )
+                xboxLeft = np.int( xLeft * imgScale )
+                yTopDraw = np.int( yTop * imgScale )
+                winDraw = np.int( window * imgScale )
 
                 cv2.rectangle( drawImg, ( xboxLeft, yTopDraw + startY ), ( xboxLeft + winDraw, yTopDraw + winDraw + startY ), ( 0, 0, 255 ), 6 )
 
