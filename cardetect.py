@@ -535,8 +535,13 @@ def CarDetectPipeline( imageName ):
     nxSteps = ( nxBlocks - nBlocksPerWindow ) // cellsPerStep
     nySteps = ( nyBlocks - nBlocksPerWindow ) // cellsPerStep
 
-    # Get the features for the cropped image:
-    features = GetSingleImageFeatures( convertImgToSearch, orient, pixelsPerCell, cellsPerBlock, hogChannel )
+    # Get the HOG features for the cropped image:
+    ch1Features = GetHOGFeatures( ch1, orient, pixelsPerCell, cellsPerBlock, False, False )
+    ch2Features = GetHOGFeatures( ch2, orient, pixelsPerCell, cellsPerBlock, False, False )
+    ch3Features = GetHOGFeatures( ch3, orient, pixelsPerCell, cellsPerBlock, False, False )
+    #features = GetSingleImageFeatures( convertImgToSearch, orient, pixelsPerCell, cellsPerBlock, hogChannel )
+
+    return np.copy( image )
 
     for xb in range( nxSteps ):
         for yb in range( nySteps ):
