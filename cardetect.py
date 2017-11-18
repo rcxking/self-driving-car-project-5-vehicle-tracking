@@ -23,6 +23,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 from sklearn.svm import LinearSVC
 from sklearn.externals import joblib
+from moviepy.editor import VideoFileClip
 
 # Constants
 
@@ -479,15 +480,14 @@ def GetSlidingWindows( img, xStartStop=[None, None], yStartStop=[None, None], xy
 '''
 Vehicle Detection Pipeline
 
-This function takes in the full path of the image
-to process.  This function returns the same image
-but with bounding rectangles overlayed around the detected
-vehicles
+This function takes in an RGB image to process.  This function 
+returns the same image but with bounding rectangles overlayed 
+around the detected vehicles
 '''
-def CarDetectPipeline( imageName ):
+def CarDetectPipeline( image ):
 
     # Open the image in RGB format:
-    image = mpimg.imread( imageName )
+    #image = mpimg.imread( imageName )
 
     # Load the classifier data from file:
     svm = joblib.load( PICKLE_FILE )  
@@ -532,8 +532,8 @@ def CarDetectPipeline( imageName ):
     nxBlocks = ( ch1.shape[ 1 ] // pixelsPerCell ) - cellsPerBlock + 1
     nyBlocks = ( ch1.shape[ 0 ] // pixelsPerCell ) - cellsPerBlock + 1
     numFeaturesPerBlock = orient * cellsPerBlock ** 2
-    print( "nxBlocks: " + str( nxBlocks ) )
-    print( "nyBlocks: " + str( nyBlocks ) )
+    #print( "nxBlocks: " + str( nxBlocks ) )
+    #print( "nyBlocks: " + str( nyBlocks ) )
 
     # Each image is 64 pixels (8 cells @ 8 pixels per cell):
     window = 64
@@ -649,14 +649,30 @@ def main():
             '''
         
             for imagePath in images:
-                
-                detectedImage = CarDetectPipeline( imagePath )
+
+                # Open the image in RGB color space:
+                rgbImage = mpimg.imread( imagePath )
+
+                detectedImage = CarDetectPipeline( rgbImage )
 
                 DisplayImage( detectedImage )
 
         if "video" in sys.argv:
-            # TODO: We're expecting the video file to analyze to be in the following argument:  
-            print( "Now detecting vehicles in video" )
+
+            # Check to see if the next argument is a video file:
+            videoIndex = sys.argv.index( "video" )
+            if videoIndex + 1 >= len( sys.argv ):
+                print( "ERROR: Expecting Video File" )
+                return
+
+            videoName = sys.argv[ videoIndex + 1 ]
+            print( "Now detecting vehicles in video: " + videoName )
+            clip = VideoFileClip( "./" + videoName )
+            outputVideo = "output.mp4"
+            vid = clip.fl_image( CarDetectPipeline )
+            vid.write_videofile( outputVideo, audio = False )
+
+            print( "Done creating video" )
 
     else:
         # Display usage:
