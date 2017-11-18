@@ -37,7 +37,7 @@ OUTPUT_IMAGES_FOLDER = "./output_images/"
 
 # Tuning Parameters:
 colorspace = "HSV"
-orient = 16
+orient = 9
 pixelsPerCell = 4
 cellsPerBlock = 2
 hogChannel = 2
