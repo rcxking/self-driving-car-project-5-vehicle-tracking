@@ -671,39 +671,6 @@ def CarDetectPipeline( image ):
 
     return drawImg
     
-    # GetSlidingWindows( img, xStartStop=[None, None], yStartStop=[None, None], xyWindow=(64,64), xyOverlap=(0.5, 0.5) )
-
-    '''
-    Examine only the lower half of the image (so the we'll look at anything
-    from ( 0, imageHeight / 2 ) to ( imageWidth, imageHeight ).
-    '''
-    startX = 0
-    startY = int( image.shape[ 0 ] / 2 )
-
-    slidingWindows = GetSlidingWindows( image, xStartStop = [ startX, None ], yStartStop = [ startY, None ]  )
-
-    for window in slidingWindows:
-        # Extract the next window:
-        imgWindow = cv2.resize( image[ window[ 0 ][ 1 ]:window[ 1 ][ 1 ], window[ 0 ][ 0 ] : window[ 1 ][ 0 ] ], ( 64, 64 ) )
-
-        #DisplayImage( imgWindow )
-
-        # Extract features for this window:
-        features = GetSingleImageFeatures( imgWindow, orient, pixelsPerCell, cellsPerBlock, hogChannel )
-
-        # Scale the features:
-        scaledFeatures = scaler.transform( np.array( features ).reshape( 1, -1 ) )
-
-        # Prediction:
-        pred = svm.predict( scaledFeatures )
-        print( "Vehicle detected: " + str( pred ) )
-
-        if pred == 1 :
-            DisplayImage( imgWindow )
-
-    # TODO: Replace this when the pipeline is complete:
-    return np.copy( image )
-
 '''
 Main function.  We are expecting a single command-line argument,
 which tells the script whether we want to process images or a video file.
