@@ -23,6 +23,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 from sklearn.svm import LinearSVC
 from sklearn.externals import joblib
+from scipy.ndimage.measurements import label
 from moviepy.editor import VideoFileClip
 
 # Constants
@@ -231,6 +232,26 @@ threshold.
 def ApplyHeatmapThreshold( heatmap, threshold ):
     heatmap[ heatmap <= threshold ] = 0
     return heatmap
+
+'''
+Helper function to draw labeled bounding boxes
+on the heat map.
+'''
+def DrawLabeledBoxes( img, labels ):
+
+    for i in range( 1, labels[ 1 ] + 1 ):
+
+        nonZero = ( labels[ 0 ] == i ).nonzero()
+
+        nonZeroY = np.array( nonZero[ 0 ] )
+        nonZeroX = np.array( nonZero[ 1 ] )
+
+        bbox = ( ( np.min( nonZeroX ), np.min( nonZeroY ) ), ( np.max( nonZeroX ), np.max( nonZeroY ) ) )
+
+        cv2.rectangle( img, bbox[ 0 ], bbox[ 1 ], ( 0, 0, 255 ), 6 )
+
+
+    return img
 
 '''
 This function takes in a list of strings of filenames from the
@@ -529,6 +550,7 @@ def CarDetectPipeline( image ):
 
     # Copy of image to draw bounding boxes on:
     drawImg = np.copy( image )
+    drawImg2 = np.copy( image )
     
     # Normalize the input image:
     image = image.astype( np.float32 ) / 255
@@ -580,6 +602,9 @@ def CarDetectPipeline( image ):
     ch3Features = GetHOGFeatures( ch3, orient, pixelsPerCell, cellsPerBlock, False, False )
     #features = GetSingleImageFeatures( convertImgToSearch, orient, pixelsPerCell, cellsPerBlock, hogChannel )
 
+    # List to hold all the bounding boxes of any detections:
+    bBoxes = [] 
+
     for xb in range( nxSteps ):
         for yb in range( nySteps ):
             yPos = yb * cellsPerStep
@@ -618,7 +643,31 @@ def CarDetectPipeline( image ):
                 yTopDraw = np.int( yTop * imgScale )
                 winDraw = np.int( window * imgScale )
 
+                bBoxes.append( ( ( xboxLeft, yTopDraw + startY ), ( xboxLeft + winDraw, yTopDraw + winDraw + startY ) ) )
                 cv2.rectangle( drawImg, ( xboxLeft, yTopDraw + startY ), ( xboxLeft + winDraw, yTopDraw + winDraw + startY ), ( 0, 0, 255 ), 6 )
+
+    '''
+    We now have our bounding boxes drawn on drawImg; however the bounding boxes
+    may also contain false positives.  Create a heatmap and apply a threshold
+    to eliminate these false positives:
+    '''
+    heat = np.zeros_like( drawImg[ :, :, 0 ] ).astype( np.float )
+    heat = AddHeat( heat, bBoxes )
+
+    # Threshold the heatmap:
+    heat = ApplyHeatmapThreshold( heat, 1 )
+
+    heatmap = np.clip( heat, 0, 255 )
+
+    labels = label( heatmap )
+
+    finalHeat = DrawLabeledBoxes( drawImg2, labels )
+    plt.figure()
+    plt.subplot( 121 )
+    plt.imshow( finalHeat )
+    plt.subplot( 122 )
+    plt.imshow( heatmap, cmap = 'hot' )
+    plt.show()
 
     return drawImg
     
