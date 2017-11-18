@@ -339,7 +339,7 @@ def TrainClassifier():
     which colorspace to work in.
     '''
 
-    if False:
+    if True:
         randNum = random.randint( 0, min( datasetStats[ "nCars" ], datasetStats[ "nNotCars" ] ) ) 
         vehicleImg = cv2.imread( vehicleImages[ randNum ] ) #mpimg.imread( vehicleImages[ randNum ] )
         nonVehicleImg = cv2.imread( nonVehicleImages[ randNum ] ) #mpimg.imread( nonVehicleImages[ randNum ] )
@@ -365,11 +365,43 @@ def TrainClassifier():
         vehicleImgLUV = cv2.cvtColor( vehicleImg, cv2.COLOR_RGB2LUV )
         nonVehicleImgLUV = cv2.cvtColor( nonVehicleImg, cv2.COLOR_RGB2LUV )
 
-        Plot3D( vehicleImgHSV, vehicleRGB, axis_labels = list( "HSV" ) )
-        plt.show()
+        # Set this to True to display 3D-Plots: 
+        if False:
+            Plot3D( vehicleImgHSV, vehicleRGB, axis_labels = list( "HSV" ) )
+            plt.show()
 
-        Plot3D( nonVehicleImgHSV, nonVehicleRGB, axis_labels = list( "HSV" ) )
-        plt.show()
+            Plot3D( nonVehicleImgHSV, nonVehicleRGB, axis_labels = list( "HSV" ) )
+            plt.show()
+
+        # Set this to True to display HOG features:
+        #def GetHOGFeatures( img, orient, pixelsPerCell, cellsPerBlock, vis=False, featureVec=True ):
+        if True:
+            ch1featV, ch1ImgV = GetHOGFeatures( vehicleImgHLS[ :, :, 0 ], orient, pixelsPerCell, cellsPerBlock, vis = True, featureVec = True )
+            ch2featV, ch2ImgV = GetHOGFeatures( vehicleImgHLS[ :, :, 1 ], orient, pixelsPerCell, cellsPerBlock, vis = True, featureVec = True )
+            ch3featV, ch3ImgV = GetHOGFeatures( vehicleImgHLS[ :, :, 2 ], orient, pixelsPerCell, cellsPerBlock, vis = True, featureVec = True )
+           
+            ch1featN, ch1ImgN = GetHOGFeatures( nonVehicleImgHLS[ :, :, 0 ], orient, pixelsPerCell, cellsPerBlock, vis = True, featureVec = True )
+            ch2featN, ch2ImgN = GetHOGFeatures( nonVehicleImgHLS[ :, :, 1 ], orient, pixelsPerCell, cellsPerBlock, vis = True, featureVec = True )
+            ch3featN, ch3ImgN = GetHOGFeatures( nonVehicleImgHLS[ :, :, 2 ], orient, pixelsPerCell, cellsPerBlock, vis = True, featureVec = True )
+
+            plt.figure()
+            plt.subplot( 241 )
+            plt.imshow( ch1ImgV )
+            plt.subplot( 242 )
+            plt.imshow( ch2ImgV )
+            plt.subplot( 243 )
+            plt.imshow( ch3ImgV )
+            plt.subplot( 244 )
+            plt.imshow( vehicleImg )
+            plt.subplot( 245 )
+            plt.imshow( ch1ImgN )
+            plt.subplot( 246 )
+            plt.imshow( ch2ImgN )
+            plt.subplot( 247 )
+            plt.imshow( ch3ImgN )
+            plt.subplot( 248 )
+            plt.imshow( nonVehicleImg )
+            plt.show()
 
         return
 
