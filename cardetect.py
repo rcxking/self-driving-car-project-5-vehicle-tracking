@@ -655,7 +655,7 @@ def CarDetectPipeline( image ):
     heat = AddHeat( heat, bBoxes )
 
     # Threshold the heatmap:
-    heat = ApplyHeatmapThreshold( heat, 1 )
+    heat = ApplyHeatmapThreshold( heat, 3 )
 
     heatmap = np.clip( heat, 0, 255 )
 
