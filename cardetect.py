@@ -36,7 +36,7 @@ TEST_IMAGES_FOLDER = "./test_images/"
 OUTPUT_IMAGES_FOLDER = "./output_images/"
 
 # Tuning Parameters:
-colorspace = "HSV"
+colorspace = "HLS"
 orient = 9
 pixelsPerCell = 4
 cellsPerBlock = 2
@@ -339,7 +339,7 @@ def TrainClassifier():
     which colorspace to work in.
     '''
 
-    if True:
+    if False:
         randNum = random.randint( 0, min( datasetStats[ "nCars" ], datasetStats[ "nNotCars" ] ) ) 
         vehicleImg = cv2.imread( vehicleImages[ randNum ] ) #mpimg.imread( vehicleImages[ randNum ] )
         nonVehicleImg = cv2.imread( nonVehicleImages[ randNum ] ) #mpimg.imread( nonVehicleImages[ randNum ] )
@@ -548,14 +548,14 @@ def CarDetectPipeline( image ):
     imgScale = 1.1
 
     # Convert the image to search to the desired colorspace:
-    ctransToSearch = cv2.cvtColor( imgToSearch, cv2.COLOR_RGB2HSV )
+    ctransToSearch = cv2.cvtColor( imgToSearch, cv2.COLOR_RGB2HLS )
 
     # Scale the image if necessary:
     if imgScale != 1.0:
         imgShape = ctransToSearch.shape
         ctransToSearch = cv2.resize( ctransToSearch, ( np.int( imgShape[ 1 ] / imgScale ), np.int( imgShape[ 0 ] / imgScale ) ) ) 
 
-    # Now get the three channels (HSV):
+    # Now get the three channels of the image:
     ch1 = ctransToSearch[ :, :, 0 ]
     ch2 = ctransToSearch[ :, :, 1 ]
     ch3 = ctransToSearch[ :, :, 2 ]
