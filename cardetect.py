@@ -86,6 +86,28 @@ def DisplayGrayImage( img ):
     plt.show()
 
 '''
+Helper function to convert an RGB image into a different
+color space:
+'''
+def ConvertColorspace( img, colorspace='RGB' ): 
+    if colorspace != "RGB":
+
+        if colorspace == "HSV":
+            featureImg = cv2.cvtColor( img, cv2.COLOR_RGB2HSV )
+        elif colorspace == "LUV":
+            featureImg = cv2.cvtColor( img, cv2.COLOR_RGB2LUV )
+        elif colorspace == "HLS":
+            featureImg = cv2.cvtColor( img, cv2.COLOR_RGB2HLS )
+        elif colorspace == "YUV":
+            featureImg = cv2.cvtColor( img, cv2.COLOR_RGB2YUV )
+        elif colorspace == "YCrCb":
+            featureImg = cv2.cvtColor( img, cv2.COLOR_RGB2YCrCb )
+        else:
+            featureImg = np.copy( img )
+
+    return featureImg
+
+'''
 Helper function to generate a 3-D Plot of an image:
 '''
 def Plot3D( pixels, rgb, axis_labels = list( "RGB" ), axis_limits = ( ( 0, 255 ), ( 0, 255 ), ( 0, 255 ) ) ):
@@ -317,20 +339,8 @@ def GetFeatureVectors( imgList, colorspace, orient, pixelsPerCell, cellsPerBlock
         nextImage = mpimg.imread( fileName )
 
         # Step 2: Convert the image to the desired colorspace:
-        if colorspace != "RGB":
 
-            if colorspace == "HSV":
-                featureImg = cv2.cvtColor( nextImage, cv2.COLOR_RGB2HSV )
-            elif colorspace == "LUV":
-                featureImg = cv2.cvtColor( nextImage, cv2.COLOR_RGB2LUV )
-            elif colorspace == "HLS":
-                featureImg = cv2.cvtColor( nextImage, cv2.COLOR_RGB2HLS )
-            elif colorspace == "YUV":
-                featureImg = cv2.cvtColor( nextImage, cv2.COLOR_RGB2YUV )
-            elif colorspace == "YCrCb":
-                featureImg = cv2.cvtColor( nextImage, cv2.COLOR_RGB2YCrCb )
-        else:
-            featureImg = np.copy( nextImage )
+        featureImg = ConvertColorspace( nextImage, colorspace )
 
         featureVec.append( GetSingleImageFeatures( featureImg, orient, pixelsPerCell, cellsPerBlock, hogChannel ) )
 
@@ -570,7 +580,7 @@ def CarDetectPipeline( image ):
     imgScale = 1.1
 
     # Convert the image to search to the desired colorspace:
-    ctransToSearch = cv2.cvtColor( imgToSearch, cv2.COLOR_RGB2HLS )
+    ctransToSearch = ConvertColorspace( imgToSearch, colorspace )
 
     # Scale the image if necessary:
     if imgScale != 1.0:
