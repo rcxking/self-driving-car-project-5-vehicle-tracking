@@ -541,6 +541,96 @@ def GetSlidingWindows( img, xStartStop=[None, None], yStartStop=[None, None], xy
     return windowList
 
 '''
+This is a helper function that takes in an RGB image and
+searches from startY to endY for cars. 
+'''
+def SearchForCars( img, imgScale, startY, endY, svm, scaler ):
+
+    # Normalize the input:
+    image = img.astype( np.float32 ) / 255
+
+    # Crop out the image from startY to endY to examine:
+    imgToSearch = image[ startY : endY, : , : ]
+
+    # Conver the image to search to the desired colorspace:
+    ctransToSearch = ConvertColorspace( imgToSearch, colorspace )
+
+    # Scale the image if necessary:
+    if imgScale != 1.0:
+        imgShape = ctransToSearch.shape
+        ctransToSearch = cv2.resize( ctransToSearch, ( np.int( imgShape[ 1 ] / imgScale ), np.int( imgShape[ 0 ] / imgScale ) ) ) 
+
+    # Now get the three channels of the image:
+    ch1 = ctransToSearch[ :, :, 0 ]
+    ch2 = ctransToSearch[ :, :, 1 ]
+    ch3 = ctransToSearch[ :, :, 2 ]
+
+    # Get the number of blocks to analyze:
+    nxBlocks = ( ch1.shape[ 1 ] // pixelsPerCell ) - cellsPerBlock + 1
+    nyBlocks = ( ch1.shape[ 0 ] // pixelsPerCell ) - cellsPerBlock + 1
+    numFeaturesPerBlock = orient * cellsPerBlock ** 2
+    #print( "nxBlocks: " + str( nxBlocks ) )
+    #print( "nyBlocks: " + str( nyBlocks ) )
+
+    # Each image is 64 pixels (8 cells @ 8 pixels per cell):
+    window = 64
+    nBlocksPerWindow = ( window // pixelsPerCell ) - cellsPerBlock + 1
+    cellsPerStep = 2
+    nxSteps = ( nxBlocks - nBlocksPerWindow ) // cellsPerStep
+    nySteps = ( nyBlocks - nBlocksPerWindow ) // cellsPerStep
+
+    # Get the HOG features for the cropped image:
+    ch1Features = GetHOGFeatures( ch1, orient, pixelsPerCell, cellsPerBlock, False, False )
+    ch2Features = GetHOGFeatures( ch2, orient, pixelsPerCell, cellsPerBlock, False, False )
+    ch3Features = GetHOGFeatures( ch3, orient, pixelsPerCell, cellsPerBlock, False, False )
+    #features = GetSingleImageFeatures( convertImgToSearch, orient, pixelsPerCell, cellsPerBlock, hogChannel )
+
+    # List to hold all the bounding boxes of any detections:
+    bBoxes = [] 
+
+    for xb in range( nxSteps ):
+        for yb in range( nySteps ):
+            yPos = yb * cellsPerStep
+            xPos = xb * cellsPerStep
+
+            #print( "xPos: " + str( xPos ) )
+            #print( "yPos: " + str( yPos ) )
+
+            # Extract HOG features for this patch:
+            #hogFeat1 = features[ yPos : yPos + nBlocksPerWindow, xPos : xPos + nBlocksPerWindow ].ravel()
+            
+            hogFeat1 = ch1Features[ yPos : yPos + nBlocksPerWindow, xPos : xPos + nBlocksPerWindow ].ravel()
+            hogFeat2 = ch2Features[ yPos : yPos + nBlocksPerWindow, xPos : xPos + nBlocksPerWindow ].ravel()
+            hogFeat3 = ch3Features[ yPos : yPos + nBlocksPerWindow, xPos : xPos + nBlocksPerWindow ].ravel()
+
+            hogFeatures = np.hstack( ( hogFeat1, hogFeat2, hogFeat3 ) )
+
+            xLeft = xPos * pixelsPerCell
+            yTop = yPos * pixelsPerCell
+
+            # Extract the image patch:
+            subImg = cv2.resize( ctransToSearch[ yTop : yTop + window, xLeft: xLeft + window ], (64, 64) ) 
+
+            # Get Color Features:
+            spatialFeatures = ComputeSpatialHistogram( subImg )
+            colorHist = ComputeColorHistogram( subImg )
+
+            # Scale features and make a prediction:
+            testFeatures = scaler.transform( np.hstack( ( spatialFeatures, colorHist, hogFeatures ) ).reshape( 1, -1 ) ) 
+
+            testPrediction = svm.predict( testFeatures )
+
+            # Does the SVM predict a vehicle in the sub image?
+            if testPrediction == 1:
+                xboxLeft = np.int( xLeft * imgScale )
+                yTopDraw = np.int( yTop * imgScale )
+                winDraw = np.int( window * imgScale )
+
+                bBoxes.append( ( ( xboxLeft, yTopDraw + startY ), ( xboxLeft + winDraw, yTopDraw + winDraw + startY ) ) )
+    return bBoxes
+
+
+'''
 Vehicle Detection Pipeline
 
 This function takes in an RGB image to process.  This function 
@@ -560,7 +650,7 @@ def CarDetectPipeline( image ):
     drawImg2 = np.copy( image )
     
     # Normalize the input image:
-    image = image.astype( np.float32 ) / 255
+    #image = image.astype( np.float32 ) / 255
 
     '''
     We're only interested in finding vehicles in the bottom
@@ -570,12 +660,15 @@ def CarDetectPipeline( image ):
     '''
     startY = int( image.shape[ 0 ] / 2 )
     endY = 625
-    imgToSearch = image[ startY:endY, :, : ]
+    #imgToSearch = image[ startY:endY, :, : ]
 
     #DisplayImage( imgToSearch )
 
     imgScale = 1.1
 
+    bBoxes = SearchForCars( image, imgScale, startY, endY, svm, scaler )
+
+    '''
     # Convert the image to search to the desired colorspace:
     ctransToSearch = ConvertColorspace( imgToSearch, colorspace )
 
@@ -652,6 +745,7 @@ def CarDetectPipeline( image ):
 
                 bBoxes.append( ( ( xboxLeft, yTopDraw + startY ), ( xboxLeft + winDraw, yTopDraw + winDraw + startY ) ) )
                 cv2.rectangle( drawImg, ( xboxLeft, yTopDraw + startY ), ( xboxLeft + winDraw, yTopDraw + winDraw + startY ), ( 0, 0, 255 ), 6 )
+    '''
 
     '''
     We now have our bounding boxes drawn on drawImg; however the bounding boxes
