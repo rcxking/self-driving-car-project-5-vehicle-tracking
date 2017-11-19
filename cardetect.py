@@ -314,7 +314,6 @@ def GetSingleImageFeatures( img, orient, pixelsPerCell, cellsPerBlock, hogChanne
     colorHist = ComputeColorHistogram( img )
 
     # Extract HOG Features:
-    #def GetHOGFeatures( img, orient, pixelsPerCell, cellsPerBlock, vis=False, featureVec=True )
     ch1Features = GetHOGFeatures( img[ :, :, 0 ], orient, pixelsPerCell, cellsPerBlock, False, True )
     ch2Features = GetHOGFeatures( img[ :, :, 1 ], orient, pixelsPerCell, cellsPerBlock, False, True )
     ch3Features = GetHOGFeatures( img[ :, :, 2 ], orient, pixelsPerCell, cellsPerBlock, False, True )
@@ -327,7 +326,7 @@ performs the following steps:
 
 1) Open the image in RGB format
 2) Convert from RGB to specified colorspace
-3) 
+3) Acquire  
 '''
 def GetFeatureVectors( imgList, colorspace, orient, pixelsPerCell, cellsPerBlock, hogChannel ):
 
@@ -342,6 +341,7 @@ def GetFeatureVectors( imgList, colorspace, orient, pixelsPerCell, cellsPerBlock
 
         featureImg = ConvertColorspace( nextImage, colorspace )
 
+        # Step 3: Append the next image features into the feature vector:
         featureVec.append( GetSingleImageFeatures( featureImg, orient, pixelsPerCell, cellsPerBlock, hogChannel ) )
 
     return featureVec
@@ -548,9 +548,6 @@ returns the same image but with bounding rectangles overlayed
 around the detected vehicles
 '''
 def CarDetectPipeline( image ):
-
-    # Open the image in RGB format:
-    #image = mpimg.imread( imageName )
 
     # Load the classifier data from file:
     svm = joblib.load( PICKLE_FILE )  
